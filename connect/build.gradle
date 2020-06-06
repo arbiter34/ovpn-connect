@@ -1,0 +1,7 @@
+dependencies {
+    compile project(":proto")
+    compile group: 'commons-net', name: 'commons-net', version: '3.6'
+
+    // Time-base One Time Password
+    compile "com.warrenstrange:googleauth:1.2.0"
+}

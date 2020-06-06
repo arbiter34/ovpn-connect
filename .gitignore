@@ -1,0 +1,35 @@
+/.gradle
+sourceSets {
+    main {
+        srcDir = 'src/main/kotlin'
+    }
+}
+sourceSets {
+    main {
+        srcDir = 'src/main/kotlin'
+    }
+}
+sourceSets {
+    main {
+        srcDir = 'src/main/kotlin'
+    }
+}
+/build
+.DS_Store
+build/
+lib/
+
+# Eclipse
+/bin/
+.project
+.classpath
+
+# Intellij
+out/
+/.settings/
+profile.iml
+profile.ipr
+profile.iws
+/.datastore
+.idea/
+*.iml
