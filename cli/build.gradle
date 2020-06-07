@@ -1,0 +1,26 @@
+apply plugin: 'application'
+apply plugin: 'distribution'
+apply plugin: 'kotlin-kapt' // required
+
+dependencies {
+    compile project(":connect")
+    compile project(":qr")
+    compile project(":util")
+    // CLI Magic
+    compile 'info.picocli:picocli:4.3.2'
+    kapt 'info.picocli:picocli-codegen:4.3.2'
+}
+
+sourceSets {
+    main {
+        kotlin {
+            srcDirs += 'src/main/kotlin'
+        }
+    }
+}
+
+kapt {
+    arguments {
+        arg("project", "${project.group}/${project.name}")
+    }
+}

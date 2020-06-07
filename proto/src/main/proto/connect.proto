@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package ovpn;
+
+option java_package = "com.arbiter34.ovpnconnect.proto";
+option java_outer_classname = "Connect";
+
+service ConnectionService {
+  rpc Connection (ConnectionRequest) returns (stream ConnectionResponse) {};
+}
+
+message ConnectionRequest {
+  string username = 1;
+  string password = 2;
+  string encrypted_secret_path = 3;
+  string config_path = 4;
+  int32 port = 5;
+  Action action = 6;
+}
+
+enum Action {
+  CONNECT = 0;
+  DISCONNECT = 1;
+  STATUS = 2;
+}
+
+message ConnectionResponse {
+  ConnectionStatus status = 1;
+  string log = 2;
+}
+
+enum ConnectionStatus {
+  STARTED = 0;
+  AUTH_REQUESTED = 1;
+  USERNAME_SENT = 2;
+  PASSWORD_SENT = 3;
+  CHALLENGE_RESPONSE_WAIT = 4;
+  TOTP_SENT = 5;
+  CONNECTED = 6;
+  DISCONNECTED = 7;
+  ERROR = 8;
+}

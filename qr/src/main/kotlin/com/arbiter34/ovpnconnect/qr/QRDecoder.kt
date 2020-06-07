@@ -6,7 +6,9 @@ import com.google.zxing.LuminanceSource
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource
 import com.google.zxing.common.HybridBinarizer
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.FileInputStream
 import java.net.URI
 import java.net.URLDecoder
 import java.util.Base64
@@ -15,15 +17,9 @@ import javax.imageio.ImageIO
 object QRDecoder {
 
     fun decode(
-        filePath: String
+        imageBytes: ByteArray
     ): ByteArray {
-        val file = File(filePath)
-
-        if (!file.exists()) {
-            throw IllegalStateException("Unable to find file ${file.absolutePath}")
-        }
-
-        val image = ImageIO.read(file)
+        val image = ImageIO.read(ByteArrayInputStream(imageBytes))
         val luminanceSource = BufferedImageLuminanceSource(image)
         val bitmap = BinaryBitmap(HybridBinarizer(luminanceSource))
 
@@ -45,5 +41,22 @@ object QRDecoder {
             .first()
             .secret
             .toByteArray()
+    }
+
+    fun decode(
+        filePath: String
+    ): ByteArray {
+        val file = File(filePath)
+
+        if (!file.exists()) {
+            throw IllegalStateException("Unable to find file ${file.absolutePath}")
+        }
+
+        return FileInputStream(file)
+            .use {
+                decode(
+                    it.readAllBytes()
+                )
+            }
     }
 }

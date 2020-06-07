@@ -1,0 +1,7 @@
+dependencies {
+    // Logging
+    compile "ch.qos.logback:logback-classic:1.2.3"
+    compile "ch.qos.logback:logback-core:1.2.3"
+    compile group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.25'
+
+}

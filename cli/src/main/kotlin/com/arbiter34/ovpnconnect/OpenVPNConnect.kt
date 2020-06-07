@@ -1,6 +1,7 @@
 package com.arbiter34.ovpnconnect
 
 import com.arbiter34.ovpnconnect.util.AES
+import com.arbiter34.ovpnconnect.util.logger
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import java.io.File
@@ -37,7 +38,8 @@ class OpenVPNConnect: Callable<Int> {
             username,
             passwordString,
             secret,
-            configPath
+            configPath,
+            deadCallback = { logger().error("Disconnected from VPN!").let { -1 }}
         ).connect()
         return 0
     }

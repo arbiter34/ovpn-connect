@@ -11,12 +11,9 @@ class Utility: Callable<Int> {
         CommandLine(ScanQRCode()).execute(*listOf<String>().toTypedArray())
         return -1
     }
+}
 
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val exitCode = CommandLine(Utility()).execute(*args)
-            System.exit(exitCode)
-        }
-    }
+fun main(args: Array<String>) {
+    val exitCode = CommandLine(Utility()).execute(*args)
+    System.exit(exitCode)
 }

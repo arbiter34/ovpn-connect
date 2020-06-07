@@ -1,0 +1,6 @@
+protoBuilders:
+  - filter:
+      excludePath:
+        - google/*
+    unwrapBuilders: true
+    useDslMarkers: true

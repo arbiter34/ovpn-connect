@@ -1,21 +1,10 @@
 // Versions shared across subprojects
 ext {
-    provenance_core = 'feature-addwalletpublickeyproto-11'
-    provenance_simplie_client = 'feature-p8e-release-prep-14'
-    provenance_gateway = 'master-+'
-    provenance_keystone = 'develop-43'
-    hyperledger_version = '1.4.3'
-    mailbox_version = 'develop-116'
-
-    kotlin_version = '1.3.30'
+    kotlin_version = '1.4-M2'
     jackson_version = '2.9.5'
     junit_version = '4.12'
     jupiter_version = '5.3.2'
     postgres_version = '42.2.5'
-    exposed_version = '0.17.7'
-    redisson_version = '3.11.0'
     grpc_version = '1.25.0'
     protobuf_version = '3.6.+'
-    kethereum_version = '0.81.4'
-    khex_version = '1.0.0-RC6'
 }

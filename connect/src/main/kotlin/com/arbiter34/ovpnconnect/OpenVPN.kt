@@ -1,15 +1,21 @@
 package com.arbiter34.ovpnconnect
 
-import com.arbiter34.ovpn.TOTP.MigrationPayload
-import com.arbiter34.ovpnconnect.util.AES
+import com.arbiter34.ovpnconnect.proto.Connect.ConnectionStatus
+import com.arbiter34.ovpnconnect.proto.Connect.ConnectionStatus.AUTH_REQUESTED
+import com.arbiter34.ovpnconnect.proto.Connect.ConnectionStatus.AUTH_REQUESTED_VALUE
+import com.arbiter34.ovpnconnect.proto.Connect.ConnectionStatus.CHALLENGE_RESPONSE_WAIT
+import com.arbiter34.ovpnconnect.proto.Connect.ConnectionStatus.CONNECTED
+import com.arbiter34.ovpnconnect.proto.Connect.ConnectionStatus.ERROR
+import com.arbiter34.ovpnconnect.proto.Connect.ConnectionStatus.PASSWORD_SENT
+import com.arbiter34.ovpnconnect.proto.Connect.ConnectionStatus.STARTED
+import com.arbiter34.ovpnconnect.proto.Connect.ConnectionStatus.TOTP_SENT
 import com.warrenstrange.googleauth.GoogleAuthenticator
 import org.apache.commons.codec.binary.Base32
 import org.apache.commons.net.telnet.TelnetClient
-import java.io.File
-import java.io.FileOutputStream
-import java.net.URLDecoder
 import java.util.Base64
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 
@@ -18,9 +24,15 @@ class OpenVPN(
     private val password: String,
     private val secret: ByteArray,
     private val configPath: String,
-    private val managementPort: Int = 7777
+    private val managementPort: Int = 7777,
+    private val deadCallback: (Long) -> Unit = {}
 ) {
     private val done = AtomicBoolean(false)
+    private val pid: AtomicLong
+    private val logStack = ConcurrentLinkedDeque<String>()
+    val process: Process
+    var status = AtomicReference(STARTED)
+
 
     init {
         Runtime.getRuntime()
@@ -29,16 +41,26 @@ class OpenVPN(
                     done.set(true)
                 }
             )
+        process = Runtime.getRuntime().exec("openvpn --config $configPath --management 127.0.0.1 $managementPort --management-hold --management-forget-disconnect --management-query-passwords")
+        pid = AtomicLong(process.pid())
+    }
+
+    fun popLog(): String {
+        return logStack.pop()
+    }
+
+    fun kill() {
+        process.destroy()
+        done.set(true)
     }
 
     fun connect() {
-        lateinit var process: Process
         try {
-            process = Runtime.getRuntime().exec("openvpn --config $configPath --management 127.0.0.1 $managementPort --management-hold --management-forget-disconnect --management-query-passwords")
 
             if (!process.isAlive) {
                 val input = process.inputStream.readAllBytes().toString(Charsets.US_ASCII)
                 val error = process.errorStream.readAllBytes().toString(Charsets.US_ASCII)
+                status.set(ERROR)
                 println("OH SHIT: $input")
                 println("ERROR: $error")
                 return
@@ -71,16 +93,36 @@ class OpenVPN(
                         bytes.add(res.toByte())
                         if (bytes.size > 3 && bytes[bytes.size-2].toChar() == '\r' && res.toChar() == '\n') {
                             val line = bytes.toByteArray().toString(Charsets.US_ASCII)
+                            logStack.add(line)
                             println(line)
                             when {
                                 line.contains("HOLD") && !sendHoldRelease.get() -> sendHoldRelease.set(true)
-                                line.startsWith(">PASSWORD") && !sendUserName.get() -> println("Authentication is beginning.").also { sendUserName.set(true) }
-                                line.contains("SUCCESS: 'Auth' username entered") -> println("Username sent, sending pw.").also { sendPassword.set(true) }
+                                line.startsWith(">PASSWORD") && !sendUserName.get() -> println("Authentication is beginning.")
+                                    .also {
+                                        sendUserName.set(true)
+                                        status.set(AUTH_REQUESTED)
+                                    }
+                                line.contains("SUCCESS: 'Auth' username entered") -> println("Username sent, sending pw.")
+                                    .also {
+                                        sendPassword.set(true)
+                                        status.set(PASSWORD_SENT)
+                                    }
                                 line.contains("SUCCESS: 'Auth' password entered") -> println("pw sent")
                                 line.contains("ERROR") -> systemError.set(true)
-                                line.contains(">PASSWORD:Verification Failed: 'Auth'") -> line.replace("^.*?\\['([^'])".toRegex(), "$1").split(":").let{ startTOTP.set(it) }
-                                line.contains(">PASSWORD:Need 'Auth' username/password") && startTOTP.get().isNotEmpty() -> finishTOTP.set(true)
-                                line.contains(">PASSWORD:Auth-Token") -> authToken.set(line.replace(">PASSWORD:Auth-Token:", ""))
+                                line.contains(">PASSWORD:Verification Failed: 'Auth'") -> line.replace("^.*?\\['([^'])".toRegex(), "$1")
+                                    .split(":")
+                                    .let { startTOTP.set(it) }
+                                    .also {
+                                        status.set(CHALLENGE_RESPONSE_WAIT)
+                                    }
+                                line.contains(">PASSWORD:Need 'Auth' username/password") && startTOTP.get().isNotEmpty() -> {
+                                    finishTOTP.set(true)
+                                    status.set(TOTP_SENT)
+                                }
+                                line.contains(">PASSWORD:Auth-Token") -> {
+                                    authToken.set(line.replace(">PASSWORD:Auth-Token:", ""))
+                                    status.set(CONNECTED)
+                                }
                             }
                             bytes.clear()
                         }
@@ -143,9 +185,12 @@ class OpenVPN(
                 }
             }
 
-        while (!systemError.get() && !done.get()) {
-            Thread.sleep(1000)
-        }
+            while (!systemError.get() && !done.get()) {
+                Thread.sleep(1000)
+            }
+            if (systemError.get()) {
+                deadCallback(pid.get())
+            }
         } catch (t: Throwable) {
             if (process.isAlive) {
                 process.destroy()

@@ -1,0 +1,33 @@
+plugins {
+    id 'kotlin'
+    id 'com.google.protobuf'
+}
+
+repositories {
+    maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+}
+
+dependencies {
+    compile project(":proto")
+    compile project(":connect")
+    compile project(":qr")
+    compile project(":util")
+    // Java
+    compile "javax.annotation:javax.annotation-api:1.2"
+
+    // Google
+    compile "com.google.guava:guava:28.2-jre"
+
+    // Micronaut
+    compile("io.micronaut.grpc:micronaut-grpc-runtime:2.0.0.M1")
+
+    // GRPC
+    compile group: 'io.grpc', name: 'grpc-netty', version: grpc_version
+    compile group: 'io.grpc', name: 'grpc-protobuf', version: grpc_version
+
+    // DB
+    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.31.1'
+    compile group: 'com.zaxxer', name: 'HikariCP', version: '3.4.5'
+
+    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.31.1'
+}

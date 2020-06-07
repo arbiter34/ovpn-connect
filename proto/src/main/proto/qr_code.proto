@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package ovpn;
+
+option java_package = "com.arbiter34.ovpnconnect.proto";
+option java_outer_classname = "QrCode";
+
+service QrDecodeService {
+  rpc decodeQr (DecodeQrRequest) returns (DecodeQrResponse) {};
+}
+
+message DecodeQrRequest {
+  bytes imageBytes = 1;
+  bool  encryptAndStoreLocally = 2;
+  string localPath = 3;
+  string ovpn_username = 4; //  SECRET
+  string ovpn_password = 5; // PASSWORD
+}
+
+message DecodeQrResponse {
+  Result result = 1;
+  bytes secret = 2;
+}
+
+enum Result {
+  RAW_BYTES_RETURNED = 0;
+  ENCRYPTED_BYTES_STORED = 1;
+  IMAGE_ERROR = 2;
+}

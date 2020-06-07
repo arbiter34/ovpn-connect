@@ -2,38 +2,64 @@ buildscript {
     repositories {
         mavenCentral()
     }
+
+    ext.protobuf_version = "3.11.1"
+    ext.grpc_version = "1.28.1" // CURRENT_GRPC_VERSION
+    ext.grpc_kotlin_version = "0.1.3" // CURRENT_GRPC_KOTLIN_VERSION
+    ext.krotoPlusVersion = "0.6.1"
+
     dependencies {
-        classpath group: 'com.google.protobuf', name: 'protobuf-gradle-plugin', version: '0.8.12'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.7'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
-apply plugin: 'java-library'
-apply plugin: 'com.google.protobuf'
+plugins {
+    id 'java'
+    id 'kotlin'
+    id 'java-library'
+    id 'com.google.protobuf'
+}
 
-// Include the generated java proto implementations in the jar.
-sourceSets.main.java.srcDirs += 'build/generated/source/proto/main/java'
+// Include the generated java proto apis in the jar.
+sourceSets.main.java.srcDirs += "${project(":proto").buildDir}/generated/source/proto/main/java"
+sourceSets.main.java.srcDirs += "${project(":proto").buildDir}/generated/source/proto/main/grpc"
 
 dependencies {
-    api "javax.annotation:javax.annotation-api:1.3.1"
-    api "com.google.protobuf:protobuf-java:$protobuf_version"
-    api "com.google.protobuf:protobuf-java-util:$protobuf_version"
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    // Grpc and Protobuf
+    compile "com.google.protobuf:protobuf-java:$protobuf_version"
+    compile "com.google.protobuf:protobuf-java-util:$protobuf_version"
+    compile "io.grpc:grpc-protobuf:$grpc_version"
+    compile "io.grpc:grpc-stub:$grpc_version"
+
+    compile "javax.annotation:javax.annotation-api:1.3.1"
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
 
 protobuf {
-    protoc {
-        // The artifact spec for the Protobuf Compiler
-        artifact = "com.google.protobuf:protoc:$protobuf_version"
-    }
+    protoc { artifact = "com.google.protobuf:protoc:$protobuf_version" }
     plugins {
-        // Optional: an artifact spec for a protoc plugin, with "grpc" as
-        // the identifier, which can be referred to in the "plugins"
-        // container of the "generateProtoTasks" closure.
+        // Specify protoc to generate using kotlin protobuf plugin
         grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.0.0-pre2'
+            artifact = "io.grpc:protoc-gen-grpc-java:1.4.0"
         }
     }
     generateProtoTasks {
         all().each { task ->
+            task.builtins {
+            }
         }
         ofSourceSet('main')*.plugins {
             // Apply the "grpc" plugin whose spec is defined above, without
