@@ -54,6 +54,7 @@ allprojects {
 }
 
 dependencies {
+    compile project(":cli")
     compile project(":connect")
 }
 
