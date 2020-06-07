@@ -12,10 +12,13 @@ service ConnectionService {
 message ConnectionRequest {
   string username = 1;
   string password = 2;
-  string encrypted_secret_path = 3;
-  string config_path = 4;
-  int32 port = 5;
-  Action action = 6;
+  oneof encrypted {
+    string encrypted_secret_path = 3;
+    bytes encrypted_secret = 4;
+  }
+  string config_path = 5;
+  int32 port = 6;
+  Action action = 7;
 }
 
 enum Action {
