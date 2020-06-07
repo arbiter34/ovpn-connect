@@ -79,3 +79,13 @@ kapt {
         arg("project", "${project.group}/${project.name}")
     }
 }
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.arbiter34.ovpnconnect.OpenVPNConnect'
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
