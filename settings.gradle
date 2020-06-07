@@ -1,3 +1,4 @@
 rootProject.name = 'openvpn-connect'
 include 'connect'
 include 'proto'
+include 'qr'
