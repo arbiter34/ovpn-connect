@@ -4,4 +4,6 @@ dependencies {
 
     // Time-base One Time Password
     compile "com.warrenstrange:googleauth:1.2.0"
+
+    compile "com.grunka.random.fortuna:fortuna:2.1"
 }

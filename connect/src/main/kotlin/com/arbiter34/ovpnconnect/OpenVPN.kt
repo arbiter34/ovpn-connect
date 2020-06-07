@@ -1,8 +1,13 @@
 package com.arbiter34.ovpnconnect
 
+import com.arbiter34.ovpn.TOTP.MigrationPayload
+import com.arbiter34.ovpnconnect.util.AES
 import com.warrenstrange.googleauth.GoogleAuthenticator
 import org.apache.commons.codec.binary.Base32
 import org.apache.commons.net.telnet.TelnetClient
+import java.io.File
+import java.io.FileOutputStream
+import java.net.URLDecoder
 import java.util.Base64
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -13,7 +18,7 @@ class OpenVPN(
     private val password: String,
     private val secret: ByteArray,
     private val configPath: String,
-    private val managementPort: Int
+    private val managementPort: Int = 7777
 ) {
 
     fun connect() {
