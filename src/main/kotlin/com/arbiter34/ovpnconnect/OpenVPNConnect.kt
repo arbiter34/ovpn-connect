@@ -1,8 +1,6 @@
 package com.arbiter34.ovpnconnect
 
 import com.arbiter34.ovpnconnect.util.AES
-import picocli.CommandLine
-import picocli.CommandLine.ArgGroup
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import java.io.File
@@ -42,12 +40,5 @@ class OpenVPNConnect: Callable<Int> {
             configPath
         ).connect()
         return 0
-    }
-
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            CommandLine(OpenVPNConnect()).execute(*args)
-        }
     }
 }

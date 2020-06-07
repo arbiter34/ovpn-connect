@@ -43,6 +43,7 @@ object QRDecoder {
                 )
         ).otpParametersList
             .first()
+            .secret
             .toByteArray()
     }
 }

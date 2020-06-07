@@ -82,7 +82,7 @@ kapt {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.arbiter34.ovpnconnect.OpenVPNConnect'
+        attributes 'Main-Class': 'com.arbiter34.ovpnconnect.Utility'
     }
 
     from {
